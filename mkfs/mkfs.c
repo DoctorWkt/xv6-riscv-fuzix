@@ -1,15 +1,21 @@
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <assert.h>
 
-#define stat xv6_stat  // avoid clash with host struct stat
+#define dirent xv6_dirent
+#define stat xv6_stat		// avoid clash with host struct stat
 #include "../include/xv6/types.h"
 #include "../include/xv6/fs.h"
 #include "../include/xv6/stat.h"
 #include "../include/xv6/param.h"
+#undef dirent
+#undef stat
 
 #ifndef static_assert
 #define static_assert(a, b) do { switch (0) case 0: case (a): ; } while (0)
@@ -20,11 +26,11 @@
 // Disk layout:
 // [ boot block | sb block | log | inode blocks | free bit map | data blocks ]
 
-int nbitmap = FSSIZE/BPB + 1;
+int nbitmap = FSSIZE / BPB + 1;
 int ninodeblocks = NINODES / IPB + 1;
 int nlog = LOGSIZE;
-int nmeta;    // Number of meta blocks (boot, sb, nlog, inode, bitmap)
-int nblocks;  // Number of data blocks
+int nmeta;			// Number of meta blocks (boot, sb, nlog, inode, bitmap)
+int nblocks;			// Number of data blocks
 
 int fsfd;
 struct superblock sb;
@@ -34,30 +40,30 @@ uint freeblock;
 
 
 void balloc(int);
-void wsect(uint, void*);
-void winode(uint, struct dinode*);
+void wsect(uint, void *);
+void winode(uint, struct dinode *);
 void rinode(uint inum, struct dinode *ip);
 void rsect(uint sec, void *buf);
-uint ialloc(ushort type);
+uint ialloc(ushort type, int mtime);
 void iappend(uint inum, void *p, int n);
 void die(const char *);
+void dappend(int dirino, char *name, int fileino);
+void fappend(int dirino, char *filename, struct stat *sb);
+void add_directory(int dirino, char *localdir);
+int makdir(int dirino, char *newdir, struct stat *sb);
 
 // convert to riscv byte order
-ushort
-xshort(ushort x)
-{
+ushort xshort(ushort x) {
   ushort y;
-  uchar *a = (uchar*)&y;
+  uchar *a = (uchar *) & y;
   a[0] = x;
   a[1] = x >> 8;
   return y;
 }
 
-uint
-xint(uint x)
-{
+uint xint(uint x) {
   uint y;
-  uchar *a = (uchar*)&y;
+  uchar *a = (uchar *) & y;
   a[0] = x;
   a[1] = x >> 8;
   a[2] = x >> 16;
@@ -65,163 +71,140 @@ xint(uint x)
   return y;
 }
 
-int
-main(int argc, char *argv[])
-{
-  int i, cc, fd;
-  uint rootino, inum, off;
-  struct dirent de;
+int main(int argc, char *argv[]) {
+  int i;
+  uint rootino, off;
+  struct xv6_dirent de;
   char buf[BSIZE];
   struct dinode din;
 
 
   static_assert(sizeof(int) == 4, "Integers must be 4 bytes!");
 
-  if(argc < 2){
-    fprintf(stderr, "Usage: mkfs fs.img files...\n");
+  if (argc != 3) {
+    fprintf(stderr, "Usage: mkfs fs.img basedir\n");
     exit(1);
   }
 
   assert((BSIZE % sizeof(struct dinode)) == 0);
-  assert((BSIZE % sizeof(struct dirent)) == 0);
+  assert((BSIZE % sizeof(struct xv6_dirent)) == 0);
 
-  fsfd = open(argv[1], O_RDWR|O_CREAT|O_TRUNC, 0666);
-  if(fsfd < 0)
+  // Open the filesystem image file
+  fsfd = open(argv[1], O_RDWR | O_CREAT | O_TRUNC, 0666);
+  if (fsfd < 0)
     die(argv[1]);
 
   // 1 fs block = 1 disk sector
+  // Number of meta blocks: boot block, superblock, log blocks,
+  // i-node blocks and the free bitmap blocks
   nmeta = 2 + nlog + ninodeblocks + nbitmap;
+  nmeta = 2 + nlog + ninodeblocks + nbitmap;
+  // Now work out how many free blocks are left
   nblocks = FSSIZE - nmeta;
 
+  // Set up the superblock
   sb.magic = FSMAGIC;
   sb.size = xint(FSSIZE);
   sb.nblocks = xint(nblocks);
   sb.ninodes = xint(NINODES);
   sb.nlog = xint(nlog);
   sb.logstart = xint(2);
-  sb.inodestart = xint(2+nlog);
-  sb.bmapstart = xint(2+nlog+ninodeblocks);
+  sb.inodestart = xint(2 + nlog);
+  sb.bmapstart = xint(2 + nlog + ninodeblocks);
 
-  printf("nmeta %d (boot, super, log blocks %u inode blocks %u, bitmap blocks %u) blocks %d total %d\n",
-         nmeta, nlog, ninodeblocks, nbitmap, nblocks, FSSIZE);
+  printf
+    ("nmeta %d (boot, super, log blocks %u inode blocks %u, bitmap blocks %u) blocks %d total %d\n",
+     nmeta, nlog, ninodeblocks, nbitmap, nblocks, FSSIZE);
 
-  freeblock = nmeta;     // the first free block that we can allocate
+  freeblock = nmeta;		// the first free block that we can allocate
 
-  for(i = 0; i < FSSIZE; i++)
+  // Fill the filesystem with zero'ed blocks
+  for (i = 0; i < FSSIZE; i++)
     wsect(i, zeroes);
 
+  // Copy the superblock struct into a zero'ed buf
+  // and write it out as block 1
   memset(buf, 0, sizeof(buf));
   memmove(buf, &sb, sizeof(sb));
   wsect(1, buf);
 
-  rootino = ialloc(T_DIR);
+  // Grab an i-node for the root directory
+  rootino = ialloc(T_DIR, 0);	// Epoch mtime for now
   assert(rootino == ROOTINO);
 
+  // Set up the directory entry for . and add it to the root dir
+  // XXX different
   bzero(&de, sizeof(de));
   de.inum = xshort(rootino);
   strcpy(de.name, ".");
   iappend(rootino, &de, sizeof(de));
 
+  // Set up the directory entry for .. and add it to the root dir
   bzero(&de, sizeof(de));
   de.inum = xshort(rootino);
   strcpy(de.name, "..");
   iappend(rootino, &de, sizeof(de));
 
-  for(i = 2; i < argc; i++){
-    // get rid of "cmds/xv6"
-    char *shortname;
-    if(strncmp(argv[i], "cmds/xv6/", 9) == 0)
-      shortname = argv[i] + 9;
-    else
-      shortname = argv[i];
-    
-    assert(index(shortname, '/') == 0);
+  // Add the contents of the command-line directory to the root dir
+  add_directory(rootino, argv[2]);
 
-    if((fd = open(argv[i], 0)) < 0)
-      die(argv[i]);
-
-    // Skip leading _ in name when writing to file system.
-    // The binaries are named _rm, _cat, etc. to keep the
-    // build operating system from trying to execute them
-    // in place of system binaries like rm and cat.
-    if(shortname[0] == '_')
-      shortname += 1;
-
-    assert(strlen(shortname) <= DIRSIZ);
-    
-    inum = ialloc(T_FILE);
-
-    bzero(&de, sizeof(de));
-    de.inum = xshort(inum);
-    strncpy(de.name, shortname, DIRSIZ);
-    iappend(rootino, &de, sizeof(de));
-
-    while((cc = read(fd, buf, sizeof(buf))) > 0)
-      iappend(inum, buf, cc);
-
-    close(fd);
-  }
-
-  // fix size of root inode dir
+  // Fix the size of the root inode dir
   rinode(rootino, &din);
   off = xint(din.size);
-  off = ((off/BSIZE) + 1) * BSIZE;
+  off = ((off / BSIZE) + 1) * BSIZE;
   din.size = xint(off);
   winode(rootino, &din);
 
+  // Mark the in-use blocks in the free block list
   balloc(freeblock);
 
   exit(0);
 }
 
-void
-wsect(uint sec, void *buf)
-{
-  if(lseek(fsfd, sec * BSIZE, 0) != sec * BSIZE)
+// Write a sector to the image
+void wsect(uint sec, void *buf) {
+  if (lseek(fsfd, sec * BSIZE, 0) != sec * BSIZE)
     die("lseek");
-  if(write(fsfd, buf, BSIZE) != BSIZE)
+  if (write(fsfd, buf, BSIZE) != BSIZE)
     die("write");
 }
 
-void
-winode(uint inum, struct dinode *ip)
-{
+// Write an i-node to the image
+void winode(uint inum, struct dinode *ip) {
   char buf[BSIZE];
   uint bn;
   struct dinode *dip;
 
   bn = IBLOCK(inum, sb);
   rsect(bn, buf);
-  dip = ((struct dinode*)buf) + (inum % IPB);
+  dip = ((struct dinode *) buf) + (inum % IPB);
   *dip = *ip;
   wsect(bn, buf);
 }
 
-void
-rinode(uint inum, struct dinode *ip)
-{
+// Read an i-node from the image
+void rinode(uint inum, struct dinode *ip) {
   char buf[BSIZE];
   uint bn;
   struct dinode *dip;
 
   bn = IBLOCK(inum, sb);
   rsect(bn, buf);
-  dip = ((struct dinode*)buf) + (inum % IPB);
+  dip = ((struct dinode *) buf) + (inum % IPB);
   *ip = *dip;
 }
 
-void
-rsect(uint sec, void *buf)
-{
-  if(lseek(fsfd, sec * BSIZE, 0) != sec * BSIZE)
+// Read a sector from the image
+void rsect(uint sec, void *buf) {
+  if (lseek(fsfd, sec * BSIZE, 0) != sec * BSIZE)
     die("lseek");
-  if(read(fsfd, buf, BSIZE) != BSIZE)
+  if (read(fsfd, buf, BSIZE) != BSIZE)
     die("read");
 }
 
-uint
-ialloc(ushort type)
-{
+// Allocate an i-node
+// XX no mtime yet
+uint ialloc(ushort type, int mtime) {
   uint inum = freeinode++;
   struct dinode din;
 
@@ -229,21 +212,21 @@ ialloc(ushort type)
   din.type = xshort(type);
   din.nlink = xshort(1);
   din.size = xint(0);
+  din.mtime = mtime;
   winode(inum, &din);
   return inum;
 }
 
-void
-balloc(int used)
-{
+// Update the free block list by marking some blocks as in-use
+void balloc(int used) {
   uchar buf[BSIZE];
   int i;
 
   printf("balloc: first %d blocks have been allocated\n", used);
   assert(used < BPB);
   bzero(buf, BSIZE);
-  for(i = 0; i < used; i++){
-    buf[i/8] = buf[i/8] | (0x1 << (i%8));
+  for (i = 0; i < used; i++) {
+    buf[i / 8] = buf[i / 8] | (0x1 << (i % 8));
   }
   printf("balloc: write bitmap block at sector %d\n", sb.bmapstart);
   wsect(sb.bmapstart, buf);
@@ -251,10 +234,9 @@ balloc(int used)
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
-void
-iappend(uint inum, void *xp, int n)
-{
-  char *p = (char*)xp;
+// Append more data to the file with i-node number inum
+void iappend(uint inum, void *xp, int n) {
+  char *p = (char *) xp;
   uint fbn, off, n1;
   struct dinode din;
   char buf[BSIZE];
@@ -264,24 +246,24 @@ iappend(uint inum, void *xp, int n)
   rinode(inum, &din);
   off = xint(din.size);
   // printf("append inum %d at off %d sz %d\n", inum, off, n);
-  while(n > 0){
+  while (n > 0) {
     fbn = off / BSIZE;
     assert(fbn < MAXFILE);
-    if(fbn < NDIRECT){
-      if(xint(din.addrs[fbn]) == 0){
-        din.addrs[fbn] = xint(freeblock++);
+    if (fbn < NDIRECT) {
+      if (xint(din.addrs[fbn]) == 0) {
+	din.addrs[fbn] = xint(freeblock++);
       }
       x = xint(din.addrs[fbn]);
     } else {
-      if(xint(din.addrs[NDIRECT]) == 0){
-        din.addrs[NDIRECT] = xint(freeblock++);
+      if (xint(din.addrs[NDIRECT]) == 0) {
+	din.addrs[NDIRECT] = xint(freeblock++);
       }
-      rsect(xint(din.addrs[NDIRECT]), (char*)indirect);
-      if(indirect[fbn - NDIRECT] == 0){
-        indirect[fbn - NDIRECT] = xint(freeblock++);
-        wsect(xint(din.addrs[NDIRECT]), (char*)indirect);
+      rsect(xint(din.addrs[NDIRECT]), (char *) indirect);
+      if (indirect[fbn - NDIRECT] == 0) {
+	indirect[fbn - NDIRECT] = xint(freeblock++);
+	wsect(xint(din.addrs[NDIRECT]), (char *) indirect);
       }
-      x = xint(indirect[fbn-NDIRECT]);
+      x = xint(indirect[fbn - NDIRECT]);
     }
     n1 = min(n, (fbn + 1) * BSIZE - off);
     rsect(x, buf);
@@ -295,9 +277,99 @@ iappend(uint inum, void *xp, int n)
   winode(inum, &din);
 }
 
-void
-die(const char *s)
-{
+void die(const char *s) {
   perror(s);
   exit(1);
+}
+
+// Add the given filename and i-number as a directory entry 
+void dappend(int dirino, char *name, int fileino) {
+  struct xv6_dirent de;
+
+  bzero(&de, sizeof(de));
+  de.inum = xshort(fileino);
+  strncpy(de.name, name, DIRSIZ);
+  iappend(dirino, &de, sizeof(de));
+}
+
+// Add a file to the directory with given i-num
+void fappend(int dirino, char *filename, struct stat *sb) {
+  char buf[BSIZE];
+  int cc, fd, inum;
+
+  // Open the file up
+  if ((fd = open(filename, 0)) < 0) {
+    perror(filename);
+    exit(1);
+  }
+  // Allocate an i-node for the file
+  inum = ialloc(T_FILE, sb->st_mtime);
+
+  // Add the file's name to the root directory
+  dappend(dirino, filename, inum);
+
+  // Read the file's contents in and write to the filesystem
+  while ((cc = read(fd, buf, sizeof(buf))) > 0)
+    iappend(inum, buf, cc);
+
+  close(fd);
+}
+
+// Given a local directory name and a directory i-node number
+// on the image, add all the files from the local directory
+// to the on-image directory
+void add_directory(int dirino, char *localdir) {
+  DIR *D;
+  struct dirent *dent;
+  struct stat sb;
+  int newdirino;
+
+  D = opendir(localdir);
+  if (D == NULL) {
+    perror(localdir);
+    exit(1);
+  }
+  chdir(localdir);
+
+  while ((dent = readdir(D)) != NULL) {
+
+    // Skip . and ..
+    if (!strcmp(dent->d_name, "."))
+      continue;
+    if (!strcmp(dent->d_name, ".."))
+      continue;
+
+    if (stat(dent->d_name, &sb) == -1) {
+      perror(dent->d_name);
+      exit(1);
+    }
+
+    if (S_ISDIR(sb.st_mode)) {
+      newdirino = makdir(dirino, dent->d_name, &sb);
+      add_directory(newdirino, dent->d_name);
+    }
+    if (S_ISREG(sb.st_mode)) {
+      fappend(dirino, dent->d_name, &sb);
+    }
+  }
+
+  closedir(D);
+  chdir("..");
+}
+
+// Make a directory entry in the directory with the given i-node number
+// and return the new directory's i-number
+int makdir(int dirino, char *newdir, struct stat *sb) {
+  int ino;
+
+  // Allocate the inode number for this directory
+  // and set up the . and .. entries
+  ino = ialloc(T_DIR, sb->st_mtime);
+  dappend(ino, ".", ino);
+  dappend(ino, "..", dirino);
+
+  // In the parent directory, add the new directory entry
+  dappend(dirino, newdir, ino);
+
+  return (ino);
 }

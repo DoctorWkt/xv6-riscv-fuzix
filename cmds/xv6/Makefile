@@ -2,22 +2,22 @@ TOP_SRCDIR= ../..
 include $(TOP_SRCDIR)/Makefile.inc
 
 UPROGS=\
-	_cat\
-	_echo\
-	_forktest\
-	_grep\
-	_init\
-	_kill\
-	_ln\
-	_ls\
-	_mkdir\
-	_rm\
-	_sh\
-	_stressfs\
-	_usertests\
-	_grind\
-	_wc\
-	_zombie\
+	cat\
+	echo\
+	forktest\
+	grep\
+	init\
+	kill\
+	ln\
+	ls\
+	mkdir\
+	rm\
+	sh\
+	stressfs\
+	usertests\
+	grind\
+	wc\
+	zombie\
 
 all: initcode $(UPROGS)
 
@@ -38,7 +38,7 @@ initcode: initcode.S
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^
 
-_%: %.o
+%: %.o
 	$(LD) $(LDFLAGS) -T ../user.ld -o $@ $(CRT0) $< -L$(LIBDIR) -lulib
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
@@ -49,13 +49,13 @@ usys.S : usys.pl
 usys.o : usys.S
 	$(CC) $(CFLAGS) -c -o usys.o usys.S
 
-_forktest: forktest.o
+forktest: forktest.o
 	# forktest has less library code linked in - needs to be small
 	# in order to be able to max out the proc table.
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o _forktest forktest.o \
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o forktest forktest.o \
 		$(TOP_SRCDIR)/lib/ulib/ulib.o \
 		$(TOP_SRCDIR)/lib/ulib/usys.o
-	$(OBJDUMP) -S _forktest > forktest.asm
+	$(OBJDUMP) -S forktest > forktest.asm
 
 # Prevent deletion of intermediate files, e.g. cat.o, after first build, so
 # that disk image changes after first build are persistent until clean.  More
