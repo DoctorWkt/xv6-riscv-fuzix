@@ -15,6 +15,7 @@
 #include <xv6/sleeplock.h>
 #include <xv6/file.h>
 #include <xv6/fcntl.h>
+#include <xv6/errno.h>
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -54,13 +55,18 @@ fdalloc(struct file *f)
 uint64
 sys_dup(void)
 {
+  struct proc *p = myproc();
   struct file *f;
   int fd;
 
-  if(argfd(0, 0, &f) < 0)
+  if(argfd(0, 0, &f) < 0) {
+    p->errno= EBADF;
     return -1;
-  if((fd=fdalloc(f)) < 0)
+  }
+  if((fd=fdalloc(f)) < 0) {
+    p->errno= EMFILE;
     return -1;
+  }
   filedup(f);
   return fd;
 }
@@ -68,40 +74,48 @@ sys_dup(void)
 uint64
 sys_read(void)
 {
+  struct proc *proc = myproc();
   struct file *f;
   int n;
   uint64 p;
 
   argaddr(1, &p);
   argint(2, &n);
-  if(argfd(0, 0, &f) < 0)
+  if(argfd(0, 0, &f) < 0) {
+    proc->errno= EBADF;
     return -1;
+  }
   return fileread(f, p, n);
 }
 
 uint64
 sys_write(void)
 {
+  struct proc *proc = myproc();
   struct file *f;
   int n;
   uint64 p;
   
   argaddr(1, &p);
   argint(2, &n);
-  if(argfd(0, 0, &f) < 0)
+  if(argfd(0, 0, &f) < 0) {
+    proc->errno= EBADF;
     return -1;
-
+  }
   return filewrite(f, p, n);
 }
 
 uint64
 sys_close(void)
 {
+  struct proc *p = myproc();
   int fd;
   struct file *f;
 
-  if(argfd(0, &fd, &f) < 0)
+  if(argfd(0, &fd, &f) < 0) {
+    p->errno= EBADF;
     return -1;
+  }
   myproc()->ofile[fd] = 0;
   fileclose(f);
   return 0;
@@ -110,12 +124,15 @@ sys_close(void)
 uint64
 sys_fstat(void)
 {
+  struct proc *p = myproc();
   struct file *f;
   uint64 st; // user pointer to struct stat
 
   argaddr(1, &st);
-  if(argfd(0, 0, &f) < 0)
+  if(argfd(0, 0, &f) < 0) {
+    p->errno= EBADF;
     return -1;
+  }
   return filestat(f, st);
 }
 
@@ -124,14 +141,18 @@ uint64
 sys_link(void)
 {
   char name[DIRSIZ], new[MAXPATH], old[MAXPATH];
+  struct proc *p = myproc();
   struct inode *dp, *ip;
 
-  if(argstr(0, old, MAXPATH) < 0 || argstr(1, new, MAXPATH) < 0)
+  if(argstr(0, old, MAXPATH) < 0 || argstr(1, new, MAXPATH) < 0) {
+    p->errno = ENOENT;
     return -1;
+  }
 
   begin_op();
   if((ip = namei(old)) == 0){
     end_op();
+    p->errno = ENOENT;
     return -1;
   }
 
@@ -139,6 +160,7 @@ sys_link(void)
   if(ip->type == T_DIR){
     iunlockput(ip);
     end_op();
+    p->errno = EPERM;
     return -1;
   }
 
@@ -166,6 +188,7 @@ bad:
   iupdate(ip);
   iunlockput(ip);
   end_op();
+  p->errno = EACCES;
   return -1;
 }
 
@@ -188,17 +211,21 @@ isdirempty(struct inode *dp)
 uint64
 sys_unlink(void)
 {
+  struct proc *p = myproc();
   struct inode *ip, *dp;
   struct dirent de;
   char name[DIRSIZ], path[MAXPATH];
   uint off;
 
-  if(argstr(0, path, MAXPATH) < 0)
+  if(argstr(0, path, MAXPATH) < 0) {
+    p->errno = ENOENT;
     return -1;
+  }
 
   begin_op();
   if((dp = nameiparent(path, name)) == 0){
     end_op();
+    p->errno = ENOENT;
     return -1;
   }
 
@@ -239,6 +266,7 @@ sys_unlink(void)
 bad:
   iunlockput(dp);
   end_op();
+  p->errno = EPERM;
   return -1;
 }
 
@@ -305,14 +333,17 @@ uint64
 sys_open(void)
 {
   char path[MAXPATH];
+  struct proc *p = myproc();
   int fd, omode;
   struct file *f;
   struct inode *ip;
   int n;
 
   argint(1, &omode);
-  if((n = argstr(0, path, MAXPATH)) < 0)
+  if((n = argstr(0, path, MAXPATH)) < 0) {
+    p->errno = ENOENT;
     return -1;
+  }
 
   begin_op();
 
@@ -320,10 +351,12 @@ sys_open(void)
     ip = create(path, T_FILE, 0, 0);
     if(ip == 0){
       end_op();
+      p->errno = EEXIST;
       return -1;
     }
   } else {
     if((ip = namei(path)) == 0){
+      p->errno = ENOENT;
       end_op();
       return -1;
     }
@@ -331,6 +364,7 @@ sys_open(void)
     if(ip->type == T_DIR && omode != O_RDONLY){
       iunlockput(ip);
       end_op();
+      p->errno = EISDIR;
       return -1;
     }
   }
@@ -338,6 +372,7 @@ sys_open(void)
   if(ip->type == T_DEVICE && (ip->major < 0 || ip->major >= NDEV)){
     iunlockput(ip);
     end_op();
+    p->errno = ENODEV;
     return -1;
   }
 
@@ -346,6 +381,7 @@ sys_open(void)
       fileclose(f);
     iunlockput(ip);
     end_op();
+    p->errno = EINVAL;
     return -1;
   }
 
@@ -359,6 +395,9 @@ sys_open(void)
   f->ip = ip;
   f->readable = !(omode & O_WRONLY);
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
+
+  if (omode & O_APPEND)
+    f->off= f->ip->size;
 
   if((omode & O_TRUNC) && ip->type == T_FILE){
     itrunc(ip);
@@ -374,11 +413,13 @@ uint64
 sys_mkdir(void)
 {
   char path[MAXPATH];
+  struct proc *p = myproc();
   struct inode *ip;
 
   begin_op();
   if(argstr(0, path, MAXPATH) < 0 || (ip = create(path, T_DIR, 0, 0)) == 0){
     end_op();
+    p->errno = EINVAL;
     return -1;
   }
   iunlockput(ip);
@@ -390,6 +431,7 @@ uint64
 sys_mknod(void)
 {
   struct inode *ip;
+  struct proc *p = myproc();
   char path[MAXPATH];
   int major, minor;
 
@@ -399,6 +441,7 @@ sys_mknod(void)
   if((argstr(0, path, MAXPATH)) < 0 ||
      (ip = create(path, T_DEVICE, major, minor)) == 0){
     end_op();
+    p->errno = EINVAL;
     return -1;
   }
   iunlockput(ip);
@@ -416,12 +459,14 @@ sys_chdir(void)
   begin_op();
   if(argstr(0, path, MAXPATH) < 0 || (ip = namei(path)) == 0){
     end_op();
+    p-> errno = ENOENT;
     return -1;
   }
   ilock(ip);
   if(ip->type != T_DIR){
     iunlockput(ip);
     end_op();
+    p-> errno = ENOTDIR;
     return -1;
   }
   iunlock(ip);
@@ -434,12 +479,14 @@ sys_chdir(void)
 uint64
 sys_exec(void)
 {
+  struct proc *p = myproc();
   char path[MAXPATH], *argv[MAXARG];
   int i;
   uint64 uargv, uarg;
 
   argaddr(1, &uargv);
   if(argstr(0, path, MAXPATH) < 0) {
+    p-> errno = EACCES;
     return -1;
   }
   memset(argv, 0, sizeof(argv));
@@ -471,6 +518,7 @@ sys_exec(void)
  bad:
   for(i = 0; i < NELEM(argv) && argv[i] != 0; i++)
     kfree(argv[i]);
+  p->errno = EACCES;
   return -1;
 }
 
@@ -483,14 +531,17 @@ sys_pipe(void)
   struct proc *p = myproc();
 
   argaddr(0, &fdarray);
-  if(pipealloc(&rf, &wf) < 0)
+  if(pipealloc(&rf, &wf) < 0) {
+    p->errno= EMFILE;
     return -1;
+  }
   fd0 = -1;
   if((fd0 = fdalloc(rf)) < 0 || (fd1 = fdalloc(wf)) < 0){
     if(fd0 >= 0)
       p->ofile[fd0] = 0;
     fileclose(rf);
     fileclose(wf);
+    p->errno= EMFILE;
     return -1;
   }
   if(copyout(p->pagetable, fdarray, (char*)&fd0, sizeof(fd0)) < 0 ||
@@ -499,7 +550,90 @@ sys_pipe(void)
     p->ofile[fd1] = 0;
     fileclose(rf);
     fileclose(wf);
+    p->errno= EMFILE;
     return -1;
   }
   return 0;
+}
+
+// lseek code derived from https://github.com/ctdk/xv6
+uint64 sys_lseek(void) {
+  struct proc *p = myproc();
+  int fd;
+  int offset;
+  int base;
+  int newoff= 0;
+  int zerosize, i;
+  char *zeroed, *z;
+
+  struct file *f;
+
+  if (argfd(0, &fd, &f) < 0) {
+    p->errno= EINVAL;
+    return(-1);
+  }
+
+  argint(1, &offset);
+  argint(2, &base);
+
+  if (base == SEEK_SET) {
+    newoff = offset;
+  }
+
+  if (base == SEEK_CUR)
+    newoff = f->off + offset;
+
+  if (base == SEEK_END)
+    newoff = f->ip->size + offset;
+
+  if (newoff < 0) {
+    p->errno= EINVAL;
+    return(-1);
+  }
+
+  if (newoff > f->ip->size) {
+    zerosize = newoff - f->ip->size;
+    zeroed = kalloc();
+    z = zeroed;
+    for (i = 0; i < PGSIZE; i++)
+      *z++ = 0;
+    while (zerosize > 0) {
+      filewrite(f, (uint64)zeroed, zerosize);
+      zerosize -= PGSIZE;
+    }
+    kfree(zeroed);
+  }
+
+  f->off = newoff;
+  return(newoff);
+}
+
+// For now, only the console
+uint64 sys_ioctl(void) {
+  struct proc *p = myproc();
+  int fd;
+  int req;
+  uint64 ti;
+  struct file *f;
+
+  if (argfd(0, &fd, &f) < 0) {
+    p->errno= EINVAL;
+    return(-1);
+  }
+
+  argint(1, &req);
+  argaddr(2, &ti);
+
+  // Test for the console device
+  if ((f->type != FD_DEVICE) || (f->major != CONSOLE)) {
+    p->errno= ENOTTY;
+    return(-1);
+  }
+
+  if (consoleioctl()<0) {
+    p->errno= EFAULT;
+    return(-1);
+  }
+
+  return(0);
 }

@@ -36,7 +36,7 @@ ls(char *path)
     return;
   }
 
-  if(fstat(fd, &st) < 0){
+  if(xv6fstat(fd, &st) < 0){
     fprintf(2, "ls: cannot stat %s\n", path);
     close(fd);
     return;
@@ -79,9 +79,9 @@ main(int argc, char *argv[])
 
   if(argc < 2){
     ls(".");
-    exit(0);
+    _exit(0);
   }
   for(i=1; i<argc; i++)
     ls(argv[i]);
-  exit(0);
+  _exit(0);
 }

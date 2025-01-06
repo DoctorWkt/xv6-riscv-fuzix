@@ -6,11 +6,11 @@
 int errno;
 
 // C startup code. This wraps main() so that
-// it's OK if main() does not call exit().
+// it's OK if main() does not call _exit().
 
 void start()
 {
   extern int main();
   int result= main();
-  exit(result);
+  _exit(result);
 }

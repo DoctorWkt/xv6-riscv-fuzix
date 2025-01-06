@@ -13,7 +13,7 @@ start:
 
 # for(;;) exit();
 exit:
-        li a7, SYS_exit
+        li a7, SYS__exit
         ecall
         jal exit
 

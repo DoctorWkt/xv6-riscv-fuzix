@@ -5,6 +5,7 @@
 #include <xv6/spinlock.h>
 #include <xv6/proc.h>
 #include <xv6/defs.h>
+#include <xv6/errno.h>
 
 struct cpu cpus[NCPU];
 
@@ -215,7 +216,7 @@ proc_freepagetable(pagetable_t pagetable, uint64 sz)
   uvmfree(pagetable, sz);
 }
 
-// a user program that calls exec("/init")
+// a user program that calls exec("/bin/init")
 // assembled from ../user/initcode.S
 // od -t xC ../user/initcode
 uchar initcode[] = {
@@ -412,6 +413,7 @@ wait(uint64 addr)
                                   sizeof(pp->xstate)) < 0) {
             release(&pp->lock);
             release(&wait_lock);
+	    p->errno= EINVAL;
             return -1;
           }
           freeproc(pp);
@@ -426,6 +428,7 @@ wait(uint64 addr)
     // No point waiting if we don't have any children.
     if(!havekids || killed(p)){
       release(&wait_lock);
+      p->errno= ECHILD;
       return -1;
     }
     
@@ -612,6 +615,8 @@ kill(int pid)
     }
     release(&p->lock);
   }
+  p = myproc();
+  p->errno= ESRCH;
   return -1;
 }
 

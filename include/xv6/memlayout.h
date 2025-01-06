@@ -3,23 +3,27 @@
 // qemu -machine virt is set up like this,
 // based on qemu's hw/riscv/virt.c:
 //
-// 00001000 -- boot ROM, provided by qemu
-// 02000000 -- CLINT
-// 0C000000 -- PLIC
-// 10000000 -- uart0 
-// 10001000 -- virtio disk 
-// 80000000 -- boot ROM jumps here in machine mode
-//             -kernel loads the kernel here
-// unused RAM after 80000000.
+// 0x00001000 -- boot ROM, provided by qemu
+// 0x00101000 -- Goldfish RTC
+// 0x02000000 -- CLINT
+// 0x0C000000 -- PLIC
+// 0x10000000 -- uart0 
+// 0x10001000 -- virtio disk 
+// 0x80000000 -- boot ROM jumps here in machine mode
+//             - QEMU loads the kernel here
+// unused RAM after 0x80000000.
 
 // the kernel uses physical memory thus:
-// 80000000 -- entry.S, then kernel text and data
+// 0x80000000 -- entry.S, then kernel text and data
 // end -- start of kernel page allocation area
 // PHYSTOP -- end RAM used by the kernel
 
 // qemu puts UART registers here in physical memory.
 #define UART0 0x10000000L
 #define UART0_IRQ 10
+
+// Goldfish RTC device base address
+#define GOLDFISH_RTC 0x101000
 
 // virtio mmio interface
 #define VIRTIO0 0x10001000

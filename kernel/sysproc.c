@@ -5,6 +5,7 @@
 #include <xv6/memlayout.h>
 #include <xv6/spinlock.h>
 #include <xv6/proc.h>
+#include <xv6/errno.h>
 
 uint64
 sys_exit(void)
@@ -39,18 +40,22 @@ uint64
 sys_sbrk(void)
 {
   uint64 addr;
+  struct proc *p = myproc();
   int n;
 
   argint(0, &n);
-  addr = myproc()->sz;
-  if(growproc(n) < 0)
+  addr = p->sz;
+  if(growproc(n) < 0) {
+    p->errno= ENOMEM;
     return -1;
+  }
   return addr;
 }
 
 uint64
 sys_sleep(void)
 {
+  struct proc *p = myproc();
   int n;
   uint ticks0;
 
@@ -62,6 +67,7 @@ sys_sleep(void)
   while(ticks - ticks0 < n){
     if(killed(myproc())){
       release(&tickslock);
+      p->errno= EINVAL;
       return -1;
     }
     sleep(&ticks, &tickslock);

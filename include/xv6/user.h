@@ -3,6 +3,7 @@ struct stat;
 // system calls
 int fork(void);
 int exit(int) __attribute__((noreturn));
+int _exit(int) __attribute__((noreturn));
 int wait(int*);
 int pipe(int*);
 int write(int, const void*, int);
@@ -13,7 +14,7 @@ int exec(const char*, char**);
 int open(const char*, int);
 int mknod(const char*, short, short);
 int unlink(const char*);
-int fstat(int fd, struct stat*);
+int xv6fstat(int fd, struct stat*);
 int link(const char*, const char*);
 int mkdir(const char*);
 int chdir(const char*);
@@ -22,6 +23,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+uint64 time(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

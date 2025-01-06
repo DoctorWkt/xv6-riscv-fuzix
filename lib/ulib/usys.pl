@@ -16,7 +16,7 @@ sub entry {
 }
 	
 entry("fork");
-entry("exit");
+entry("_exit");
 entry("wait");
 entry("pipe");
 entry("read");
@@ -27,7 +27,7 @@ entry("exec");
 entry("open");
 entry("mknod");
 entry("unlink");
-entry("fstat");
+entry("xv6fstat");
 entry("link");
 entry("mkdir");
 entry("chdir");
@@ -36,3 +36,6 @@ entry("getpid");
 entry("sbrk");
 entry("sleep");
 entry("uptime");
+entry("time");
+entry("lseek");
+entry("ioctl");

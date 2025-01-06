@@ -7,6 +7,7 @@
 #include <xv6/fs.h>
 #include <xv6/sleeplock.h>
 #include <xv6/file.h>
+#include <xv6/errno.h>
 
 #define PIPESIZE 512
 
@@ -83,6 +84,7 @@ pipewrite(struct pipe *pi, uint64 addr, int n)
   while(i < n){
     if(pi->readopen == 0 || killed(pr)){
       release(&pi->lock);
+      pr->errno= EBADF;
       return -1;
     }
     if(pi->nwrite == pi->nread + PIPESIZE){ //DOC: pipewrite-full
@@ -113,6 +115,7 @@ piperead(struct pipe *pi, uint64 addr, int n)
   while(pi->nread == pi->nwrite && pi->writeopen){  //DOC: pipe-empty
     if(killed(pr)){
       release(&pi->lock);
+      pr->errno= EBADF;
       return -1;
     }
     sleep(&pi->nread, &pi->lock); //DOC: piperead-sleep

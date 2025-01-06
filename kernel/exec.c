@@ -6,6 +6,7 @@
 #include <xv6/proc.h>
 #include <xv6/defs.h>
 #include <xv6/elf.h>
+#include <xv6/errno.h>
 
 static int loadseg(pde_t *, uint64, struct inode *, uint, uint);
 
@@ -35,6 +36,7 @@ exec(char *path, char **argv)
 
   if((ip = namei(path)) == 0){
     end_op();
+    p->errno= EACCES;
     return -1;
   }
   ilock(ip);
@@ -137,6 +139,8 @@ exec(char *path, char **argv)
     iunlockput(ip);
     end_op();
   }
+  p->errno= EINVAL;	// Should probably do more specific ones
+			// before each goto bad:
   return -1;
 }
 

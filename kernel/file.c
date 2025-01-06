@@ -12,6 +12,7 @@
 #include <xv6/file.h>
 #include <xv6/stat.h>
 #include <xv6/proc.h>
+#include <xv6/errno.h>
 
 struct devsw devsw[NDEV];
 struct {
@@ -94,10 +95,13 @@ filestat(struct file *f, uint64 addr)
     ilock(f->ip);
     stati(f->ip, &st);
     iunlock(f->ip);
-    if(copyout(p->pagetable, addr, (char *)&st, sizeof(st)) < 0)
+    if(copyout(p->pagetable, addr, (char *)&st, sizeof(st)) < 0) {
+      p->errno= EFAULT;
       return -1;
+    }
     return 0;
   }
+  p->errno= EACCES;
   return -1;
 }
 
@@ -106,16 +110,21 @@ filestat(struct file *f, uint64 addr)
 int
 fileread(struct file *f, uint64 addr, int n)
 {
+  struct proc *p = myproc();
   int r = 0;
 
-  if(f->readable == 0)
+  if(f->readable == 0) {
+    p->errno= EINVAL;
     return -1;
+  }
 
   if(f->type == FD_PIPE){
     r = piperead(f->pipe, addr, n);
   } else if(f->type == FD_DEVICE){
-    if(f->major < 0 || f->major >= NDEV || !devsw[f->major].read)
+    if(f->major < 0 || f->major >= NDEV || !devsw[f->major].read) {
+      p->errno= EBADF;
       return -1;
+    }
     r = devsw[f->major].read(1, addr, n);
   } else if(f->type == FD_INODE){
     ilock(f->ip);
@@ -134,16 +143,21 @@ fileread(struct file *f, uint64 addr, int n)
 int
 filewrite(struct file *f, uint64 addr, int n)
 {
+  struct proc *p = myproc();
   int r, ret = 0;
 
-  if(f->writable == 0)
+  if(f->writable == 0) {
+    p->errno= EINVAL;
     return -1;
+  }
 
   if(f->type == FD_PIPE){
     ret = pipewrite(f->pipe, addr, n);
   } else if(f->type == FD_DEVICE){
-    if(f->major < 0 || f->major >= NDEV || !devsw[f->major].write)
+    if(f->major < 0 || f->major >= NDEV || !devsw[f->major].write) {
+      p->errno= EBADF;
       return -1;
+    }
     ret = devsw[f->major].write(1, addr, n);
   } else if(f->type == FD_INODE){
     // write a few blocks at a time to avoid exceeding
@@ -179,4 +193,3 @@ filewrite(struct file *f, uint64 addr, int n)
 
   return ret;
 }
-

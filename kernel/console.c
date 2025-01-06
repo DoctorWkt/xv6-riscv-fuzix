@@ -21,6 +21,8 @@
 #include <xv6/riscv.h>
 #include <xv6/defs.h>
 #include <xv6/proc.h>
+#include <xv6/termios.h>
+#include <xv6/errno.h>
 
 #define BACKSPACE 0x100
 #define C(x)  ((x)-'@')  // Control-x
@@ -50,7 +52,15 @@ struct {
   uint r;  // Read index
   uint w;  // Write index
   uint e;  // Edit index
+  struct termios termios;
 } cons;
+
+void
+consechoc(int c)
+{
+  if(c != C('D') && cons.termios.c_lflag & ECHO)
+    consputc(c);
+}
 
 //
 // user write()s to the console go here.
@@ -98,7 +108,7 @@ consoleread(int user_dst, uint64 dst, int n)
 
     c = cons.buf[cons.r++ % INPUT_BUF_SIZE];
 
-    if(c == C('D')){  // end-of-file
+    if(c == C('D') && cons.termios.c_lflag & ICANON){  // end-of-file
       if(n < target){
         // Save ^D for next time, to make sure
         // caller gets a 0-byte result.
@@ -115,9 +125,9 @@ consoleread(int user_dst, uint64 dst, int n)
     dst++;
     --n;
 
-    if(c == '\n'){
-      // a whole line has arrived, return to
-      // the user-level read().
+    if(c == '\n' || ((cons.termios.c_lflag & ICANON)==0)) {
+      // A whole line has arrived, return to the user-level read().
+      // Or, we are not in canonical mode, return individual characters.
       break;
     }
   }
@@ -137,6 +147,7 @@ consoleintr(int c)
 {
   acquire(&cons.lock);
 
+ if(cons.termios.c_lflag & ICANON){
   switch(c){
   case C('P'):  // Print process list.
     procdump();
@@ -145,14 +156,14 @@ consoleintr(int c)
     while(cons.e != cons.w &&
           cons.buf[(cons.e-1) % INPUT_BUF_SIZE] != '\n'){
       cons.e--;
-      consputc(BACKSPACE);
+      consechoc(BACKSPACE);
     }
     break;
   case C('H'): // Backspace
   case '\x7f': // Delete key
     if(cons.e != cons.w){
       cons.e--;
-      consputc(BACKSPACE);
+      consechoc(BACKSPACE);
     }
     break;
   default:
@@ -160,7 +171,7 @@ consoleintr(int c)
       c = (c == '\r') ? '\n' : c;
 
       // echo back to the user.
-      consputc(c);
+      consechoc(c);
 
       // store for consumption by consoleread().
       cons.buf[cons.e++ % INPUT_BUF_SIZE] = c;
@@ -174,8 +185,48 @@ consoleintr(int c)
     }
     break;
   }
-  
+ } else {	// Not canonical input
+    if(c != 0 && cons.e-cons.r < INPUT_BUF_SIZE){
+      // echo back to the user.
+      consechoc(c);
+
+      // store for consumption by consoleread().
+      cons.buf[cons.e++ % INPUT_BUF_SIZE] = c;
+
+      // wake up consoleread()
+      // has arrived.
+      cons.w = cons.e;
+      wakeup(&cons.r);
+    }
+ }
   release(&cons.lock);
+}
+
+uint64 consoleioctl(void)
+{
+  int req;
+  uint64 ti; 			// user pointer to struct termios
+  struct proc *p = myproc();
+
+  // Get the arguments
+  argint(1, &req);
+  argaddr(2, &ti);
+
+  // Is the request permitted?
+  if (req != TIOCGETA && req != TIOCSETA) {
+    return -1;
+  }
+
+  if (req == TIOCGETA) {
+    if (copyout(p->pagetable, ti,
+		(char *) &(cons.termios), sizeof(struct termios))<0)
+      return(-1);
+  } else {
+    if (copyin(p->pagetable, (char *) &(cons.termios), 
+		ti, sizeof(struct termios))<0)
+      return(-1);
+  }
+  return(0);
 }
 
 void
@@ -189,4 +240,5 @@ consoleinit(void)
   // to consoleread and consolewrite.
   devsw[CONSOLE].read = consoleread;
   devsw[CONSOLE].write = consolewrite;
+  cons.termios.c_lflag = ECHO | ICANON;
 }

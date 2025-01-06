@@ -30,6 +30,9 @@ kvmmake(void)
   // virtio mmio disk interface
   kvmmap(kpgtbl, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
 
+  // Goldfish real-time clock
+  kvmmap(kpgtbl, GOLDFISH_RTC, GOLDFISH_RTC, PGSIZE, PTE_R | PTE_W);
+
   // PLIC
   kvmmap(kpgtbl, PLIC, PLIC, 0x4000000, PTE_R | PTE_W);
 
