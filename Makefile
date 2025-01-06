@@ -4,24 +4,6 @@ include Makefile.inc
 U=cmds/xv6
 K=kernel
 
-UPROGS=\
-	$U/_cat\
-	$U/_echo\
-	$U/_forktest\
-	$U/_grep\
-	$U/_init\
-	$U/_kill\
-	$U/_ln\
-	$U/_ls\
-	$U/_mkdir\
-	$U/_rm\
-	$U/_sh\
-	$U/_stressfs\
-	$U/_usertests\
-	$U/_grind\
-	$U/_wc\
-	$U/_zombie\
-
 all:
 	(cd kernel; make)
 
@@ -31,9 +13,7 @@ mkfs/mkfs:
 fs.img: mkfs/mkfs README
 	(cd kernel; make)
 	(cd lib; make)
-	(cd cmds/xv6; make install)
-	#cp fs/bin/init fs	# For now
-	#cp fs/bin/sh fs
+	(cd cmds; make install)
 	mkfs/mkfs fs.img fs
 
 clean:
@@ -42,7 +22,6 @@ clean:
 	(cd cmds; make clean)
 	(cd mkfs; make clean)
 	rm -f fs.img
-	#rm -f fs/init fs/sh
 	rm -f fs/bin/*
 
 # try to generate a unique GDB port
