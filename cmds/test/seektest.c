@@ -8,9 +8,9 @@ char buf[16];
 int main() {
   int fd,err;
 
-  fd= open("README", O_RDONLY);
+  fd= open("/README", O_RDONLY);
   if (fd==-1) {
-    cprintf("Cannot open README\n"); return(1);
+    cprintf("Cannot open /README\n"); return(1);
   }
 
   err= lseek(fd, 50, SEEK_SET);
