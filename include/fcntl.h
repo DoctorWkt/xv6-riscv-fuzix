@@ -54,3 +54,5 @@ typedef struct flock {
 
 #endif
 
+extern int open(const char *path, int flags, ...);
+

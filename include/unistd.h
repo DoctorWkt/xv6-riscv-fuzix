@@ -59,6 +59,7 @@ extern long _pathconf(int __name);
 #define _SC_LOGIN_NAME_MAX	4
 #define _SC_CLK_TCK		5
 #define _SC_OPEN_MAX		6
+#define _POSIX_OPEN_MAX		16	// Check xv6/param.h
 #define _SC_PAGESIZE		7
 #define _SC_RE_DUP_MAX		8
 #define _SC_STREAM_MAX		9

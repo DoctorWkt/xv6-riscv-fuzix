@@ -1,0 +1,2 @@
+The functions in this directory either map between xv6 & FUZIX types/structs,
+or they return default values for system calls that xv6 doesn't have.
