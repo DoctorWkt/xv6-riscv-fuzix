@@ -9,7 +9,7 @@
 #include <xv6/user.h>
 #include <xv6/fcntl.h>
 
-char *argv[] = { "/sh", 0 };
+char *argv[] = { "/bin/sh", 0 };
 
 int
 main(void)
@@ -31,7 +31,7 @@ main(void)
       _exit(1);
     }
     if(pid == 0){
-      exec("/sh", argv);
+      exec("/bin/sh", argv);
       printf("init: exec sh failed\n");
       _exit(1);
     }

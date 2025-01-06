@@ -32,8 +32,8 @@ fs.img: mkfs/mkfs README
 	(cd kernel; make)
 	(cd lib; make)
 	(cd cmds/xv6; make install)
-	cp fs/bin/init fs	# For now
-	cp fs/bin/sh fs
+	#cp fs/bin/init fs	# For now
+	#cp fs/bin/sh fs
 	mkfs/mkfs fs.img fs
 
 clean:
@@ -42,7 +42,8 @@ clean:
 	(cd cmds; make clean)
 	(cd mkfs; make clean)
 	rm -f fs.img
-	rm -f fs/init fs/sh fs/bin/*
+	#rm -f fs/init fs/sh
+	rm -f fs/bin/*
 
 # try to generate a unique GDB port
 GDBPORT = $(shell expr `id -u` % 5000 + 25000)
