@@ -1,10 +1,10 @@
 *~
-_*
 *.o
 *.d
 *.asm
 *.sym
 *.img
+journal.md
 vectors.S
 bootblock
 entryother
