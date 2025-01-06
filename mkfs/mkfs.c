@@ -6,10 +6,10 @@
 #include <assert.h>
 
 #define stat xv6_stat  // avoid clash with host struct stat
-#include "kernel/types.h"
-#include "kernel/fs.h"
-#include "kernel/stat.h"
-#include "kernel/param.h"
+#include "../include/xv6/types.h"
+#include "../include/xv6/fs.h"
+#include "../include/xv6/stat.h"
+#include "../include/xv6/param.h"
 
 #ifndef static_assert
 #define static_assert(a, b) do { switch (0) case 0: case (a): ; } while (0)
@@ -128,10 +128,10 @@ main(int argc, char *argv[])
   iappend(rootino, &de, sizeof(de));
 
   for(i = 2; i < argc; i++){
-    // get rid of "user/"
+    // get rid of "cmds/xv6"
     char *shortname;
-    if(strncmp(argv[i], "user/", 5) == 0)
-      shortname = argv[i] + 5;
+    if(strncmp(argv[i], "cmds/xv6/", 9) == 0)
+      shortname = argv[i] + 9;
     else
       shortname = argv[i];
     

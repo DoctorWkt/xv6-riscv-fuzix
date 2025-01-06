@@ -1,9 +1,9 @@
 // Simple grep.  Only supports ^ . * $ operators.
 
-#include "kernel/types.h"
-#include "kernel/stat.h"
-#include "kernel/fcntl.h"
-#include "user/user.h"
+#include <xv6/types.h>
+#include <xv6/stat.h>
+#include <xv6/fcntl.h>
+#include <xv6/user.h>
 
 char buf[1024];
 int match(char*, char*);

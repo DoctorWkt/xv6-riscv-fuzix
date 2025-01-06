@@ -1,10 +1,10 @@
-#include "param.h"
-#include "types.h"
-#include "memlayout.h"
-#include "elf.h"
-#include "riscv.h"
-#include "defs.h"
-#include "fs.h"
+#include <xv6/param.h>
+#include <xv6/types.h>
+#include <xv6/memlayout.h>
+#include <xv6/elf.h>
+#include <xv6/riscv.h>
+#include <xv6/defs.h>
+#include <xv6/fs.h>
 
 /*
  * the kernel's page table.

@@ -5,16 +5,16 @@
 // qemu ... -drive file=fs.img,if=none,format=raw,id=x0 -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 //
 
-#include "types.h"
-#include "riscv.h"
-#include "defs.h"
-#include "param.h"
-#include "memlayout.h"
-#include "spinlock.h"
-#include "sleeplock.h"
-#include "fs.h"
-#include "buf.h"
-#include "virtio.h"
+#include <xv6/types.h>
+#include <xv6/riscv.h>
+#include <xv6/defs.h>
+#include <xv6/param.h>
+#include <xv6/memlayout.h>
+#include <xv6/spinlock.h>
+#include <xv6/sleeplock.h>
+#include <xv6/fs.h>
+#include <xv6/buf.h>
+#include <xv6/virtio.h>
 
 // the address of virtio mmio register r.
 #define R(r) ((volatile uint32 *)(VIRTIO0 + (r)))

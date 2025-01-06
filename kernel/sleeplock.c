@@ -1,13 +1,13 @@
 // Sleeping locks
 
-#include "types.h"
-#include "riscv.h"
-#include "defs.h"
-#include "param.h"
-#include "memlayout.h"
-#include "spinlock.h"
-#include "proc.h"
-#include "sleeplock.h"
+#include <xv6/types.h>
+#include <xv6/riscv.h>
+#include <xv6/defs.h>
+#include <xv6/param.h>
+#include <xv6/memlayout.h>
+#include <xv6/spinlock.h>
+#include <xv6/proc.h>
+#include <xv6/sleeplock.h>
 
 void
 initsleeplock(struct sleeplock *lk, char *name)

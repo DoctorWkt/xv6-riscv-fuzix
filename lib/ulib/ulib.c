@@ -1,18 +1,7 @@
-#include "kernel/types.h"
-#include "kernel/stat.h"
-#include "kernel/fcntl.h"
-#include "user/user.h"
-
-//
-// wrapper so that it's OK if main() does not call exit().
-//
-void
-start()
-{
-  extern int main();
-  main();
-  exit(0);
-}
+#include <xv6/types.h>
+#include <xv6/stat.h>
+#include <xv6/fcntl.h>
+#include <xv6/user.h>
 
 char*
 strcpy(char *s, const char *t)

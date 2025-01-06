@@ -1,10 +1,10 @@
-#include "types.h"
-#include "param.h"
-#include "memlayout.h"
-#include "riscv.h"
-#include "spinlock.h"
-#include "proc.h"
-#include "defs.h"
+#include <xv6/types.h>
+#include <xv6/param.h>
+#include <xv6/memlayout.h>
+#include <xv6/riscv.h>
+#include <xv6/spinlock.h>
+#include <xv6/proc.h>
+#include <xv6/defs.h>
 
 struct spinlock tickslock;
 uint ticks;
