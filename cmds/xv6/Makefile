@@ -3,21 +3,21 @@ include $(TOP_SRCDIR)/Makefile.inc
 CRT0 = $(LIBDIR)/ulib/crt0.o
 
 UPROGS=\
-	cat\
-	echo\
+	oldcat\
+	oldecho\
 	forktest\
-	grep\
+	oldgrep\
 	init\
 	kill\
-	ln\
+	oldln\
 	ls\
-	mkdir\
-	rm\
+	oldmkdir\
+	oldrm\
 	sh\
 	stressfs\
 	usertests\
 	grind\
-	wc\
+	oldwc\
 	zombie\
 
 all: initcode $(UPROGS)

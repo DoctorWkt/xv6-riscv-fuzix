@@ -1,7 +1,10 @@
 TOP_SRCDIR= ../..
 include $(TOP_SRCDIR)/Makefile.inc
 
-UPROGS= newcat
+UPROGS= banner basename cal cat cmp cut date dd dirname echo ed \
+  factor false fgrep grep head man mkdir more od printenv pwd rm rmdir \
+  sleep sum sync tail tee touch tr true uniq uue wc \
+  which yes
 
 all: $(UPROGS)
 
