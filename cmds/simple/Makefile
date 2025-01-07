@@ -1,18 +1,7 @@
 TOP_SRCDIR= ../..
 include $(TOP_SRCDIR)/Makefile.inc
 
-UPROGS= seektest\
-	tryexit\
-	errtest\
-	tryraw\
-	isattytest\
-	prtime\
-	test022\
-	cptest\
-	crtrunc\
-	stdiotest\
-	prftest\
-	perrtest\
+UPROGS= newcat
 
 all: $(UPROGS)
 

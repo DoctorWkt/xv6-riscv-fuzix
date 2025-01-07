@@ -1,67 +1,83 @@
-/* Copyright (C) 1996 Robert de Bath <robert@debath.thenet.co.uk>
- * This file is part of the Linux-8086 C library and is distributed
- * under the GNU Library General Public License.
+/* strerror - map error number to descriptive string
  *
- * Rewritten by Alan Cox to use a binary file format and save a lot of space
+ * This comes from Minix 1.5.
  */
 
-#include <unistd.h>
 #include <string.h>
-#include <stdlib.h>
-#include <paths.h>
-#include <errno.h>
-#include <fcntl.h>
 
-#define LONGEST_STRING 50
+int sys_nerr= 60;
 
-static char retbuf[LONGEST_STRING + 1];
-static int last_err = -1;
+char *sys_errlist[] = {
+        "Error 0",
+        "Not owner",
+        "No such file or directory",
+        "No such process",
+        "Interrupted system call",
+        "I/O error",
+        "No such device or address",
+        "Arg list too long",
+        "Exec format error",
+        "Bad file number",
+        "No children",
+        "No more processes",
+        "Not enough core",
+        "Permission denied",
+        "Bad address",
+        "Block device required",
+        "Mount device busy",
+        "File exists",
+        "Cross-device link",
+        "No such device",
+        "Not a directory",
+        "Is a directory",
+        "Invalid argument",
+        "File table overflow",
+        "Too many open files",
+        "Not a typewriter",
+        "Text file busy",
+        "File too large",
+        "No space left on device",
+        "Illegal seek",
+        "Read-only file system",
+        "Too many links",
+        "Broken pipe",
+        "Argument too large",
+        "Result too large",
+	"Lock table full",
+	"Directory is not empty",
+	"File name too long",
+	"Address family not supported",
+	"Operation already in progress",
+	"Address already in use",
+	"Address not available",
+	"No such system call",
+	"Protocol not supported",
+	"Operation not supported on transport endpoint",
+	"Connection reset by peer",
+	"Network is down",
+	"Message too long",
+	"Connection timed out",
+	"Connection refused",
+	"No route to host",
+	"Host is down",
+	"Network is unreachable",
+	"Transport endpoint is not connected",
+	"Operation now in progress",
+	"Cannot send after transport endpoint shutdown",
+	"Socket is already connected",
+	"No destination address specified",
+	"No buffer space available",
+	"Protocol not supported"
+};
 
-char *strerror(int err)
+char *strerror(errnum)
+int errnum;
 {
-	uint16_t nerr;
-	struct stat st;
-	int fd;
+  extern int sys_nerr;
+  extern char *sys_errlist[];
 
-	if (err < 0)
-		goto sad;
-
-	if (err == last_err)
-		return retbuf;
-
-	fd = open(_PATH_LIBERR, O_RDONLY|O_CLOEXEC);
-	if (fd < 0)
-		goto sad;
-
-	if (fstat(fd, &st) < 0 || !S_ISREG(st.st_mode))
-		goto bad;
-
-	if (read(fd, &nerr, 2) == 2 && err < nerr) {
-		uint16_t index;
-		uint16_t nexti;
-		int len;
-
-		lseek(fd, 2 + err * 2, SEEK_SET);
-		read(fd, &index, 2);
-		if (err < nerr - 1) {
-			read(fd, &nexti, 2);
-			len = nexti - index;
-		} else {
-			len = LONGEST_STRING;
-		}
-		lseek(fd, index, SEEK_SET);
-		len = read(fd, retbuf, len);
-		retbuf[len] = '\0';
-		last_err = err;
-
-		close(fd);
-		return retbuf;
-	}
-
-bad:
-	close(fd);
-sad:
-	strcpy(retbuf, "Unknown error ");
-	strcpy(retbuf + 14, _itoa(err));
-	return retbuf;
+  if (errnum > 0 && errnum < sys_nerr)
+        return(sys_errlist[errnum]);
+  else
+        return("unknown error");
 }

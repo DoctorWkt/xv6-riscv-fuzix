@@ -8,14 +8,18 @@ print "# and t5 gets tromped on as well.\n";
 
 print "#include \"../../include/xv6/syscall.h\"\n";
 
+my $labelnum= 1;
+
 sub entry {
     my $name = shift;
     print ".global $name\n";
     print "${name}:\n";
     print " li a7, SYS_${name}\n";
     print " ecall\n";
+    print " beq t6,zero,.L$labelnum\n";	# Don't set errno to zero
     print " la t5,errno\n";
     print " sw t6,0(t5)\n";
+    print ".L$labelnum:\n"; $labelnum++;
     print " ret\n";
 }
 	

@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
   int err;
 
   if (argc != 3) {
-    cprintf("Usage: cptest infile outfile\n"); exit(1);
+    cprintf("Usage: cptest infile outfile %d\n", argc); exit(1);
   }
 
   zin= fopen(argv[1], "r");
