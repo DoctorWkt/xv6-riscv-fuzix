@@ -6,6 +6,10 @@ UPROGS= seektest\
 	errtest\
 	tryraw\
 	isattytest\
+	prtime\
+	test022\
+	cptest\
+	crtrunc\
 
 all: $(UPROGS)
 
