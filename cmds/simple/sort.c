@@ -923,7 +923,7 @@ void files_merge(int file_cnt) /* Nr_of_files to merge */
 /* Merge () merges the files between start_file and limit_file. */
 void merge(int start_file, int limit_file)
 {
-  register MERGE *smallest;	/* Keeps track of smallest line */
+  register MERGE *smallest=NULL;	/* Keeps track of smallest line */
   register int i;
   int file_cnt = limit_file - start_file;	/* Nr of files to merge */
 

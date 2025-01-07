@@ -50,10 +50,22 @@ struct dirent *readdir(DIR *dirp)
   strncpy(d->d_name, x.name, DIRSIZ);
   d->d_reclen= strlen(d->d_name);
   d->d_ino= x.inum;
+  d->d_off= lseek(dirp->dd_fd, 0, SEEK_CUR);
   return(d);
 }
 
 void rewinddir(DIR *dirp)
 {
+  if (dirp==NULL) return;
   lseek(dirp->dd_fd, 0, SEEK_SET);
+}
+
+long telldir(DIR *dirp) {
+  if (dirp==NULL) return(-1);
+  return(lseek(dirp->dd_fd, 0, SEEK_CUR));
+}
+
+void seekdir(DIR *dirp, long loc) {
+  if (dirp==NULL) return;
+  lseek(dirp->dd_fd, loc, SEEK_SET);
 }

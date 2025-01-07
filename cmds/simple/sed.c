@@ -1370,7 +1370,7 @@ static void command(sedcmd *ipc)
       case CDCMD:		/* delete a line in hold space */
 	p1 = p2 = linebuf;
 	while (*p1 != '\n')
-		if (delete = (*p1++ == 0)) return;
+		if ((delete = (*p1++ == 0))) return;
 	p1++;
 	while ((*p2++ = *p1++) != 0) continue;
 	spend = p2 - 1;

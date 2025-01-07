@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     if (argc != 1)
         usage();
 
-    time(&t);
+    t= time(NULL);
     if (utc)
         tm = gmtime(&t);
     else
