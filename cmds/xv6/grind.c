@@ -68,9 +68,9 @@ go(int which_child)
       write(1, which_child?"B":"A", 1);
     int what = rand() % 23;
     if(what == 1){
-      close(open("grindir/../a", O_CREATE|O_RDWR));
+      close(open("grindir/../a", O_CREAT|O_RDWR));
     } else if(what == 2){
-      close(open("grindir/../grindir/../b", O_CREATE|O_RDWR));
+      close(open("grindir/../grindir/../b", O_CREAT|O_RDWR));
     } else if(what == 3){
       unlink("grindir/../a");
     } else if(what == 4){
@@ -82,21 +82,21 @@ go(int which_child)
       chdir("/");
     } else if(what == 5){
       close(fd);
-      fd = open("/grindir/../a", O_CREATE|O_RDWR);
+      fd = open("/grindir/../a", O_CREAT|O_RDWR);
     } else if(what == 6){
       close(fd);
-      fd = open("/./grindir/./../b", O_CREATE|O_RDWR);
+      fd = open("/./grindir/./../b", O_CREAT|O_RDWR);
     } else if(what == 7){
       write(fd, buf, sizeof(buf));
     } else if(what == 8){
       read(fd, buf, sizeof(buf));
     } else if(what == 9){
       mkdir("grindir/../a");
-      close(open("a/../a/./a", O_CREATE|O_RDWR));
+      close(open("a/../a/./a", O_CREAT|O_RDWR));
       unlink("a/a");
     } else if(what == 10){
       mkdir("/../b");
-      close(open("grindir/../b/b", O_CREATE|O_RDWR));
+      close(open("grindir/../b/b", O_CREAT|O_RDWR));
       unlink("b/b");
     } else if(what == 11){
       unlink("b");
@@ -132,7 +132,7 @@ go(int which_child)
     } else if(what == 17){
       int pid = fork();
       if(pid == 0){
-        close(open("a", O_CREATE|O_RDWR));
+        close(open("a", O_CREAT|O_RDWR));
         _exit(0);
       } else if(pid < 0){
         printf("grind: fork failed\n");
@@ -184,7 +184,7 @@ go(int which_child)
         mkdir("a");
         chdir("a");
         unlink("../a");
-        fd = open("x", O_CREATE|O_RDWR);
+        fd = open("x", O_CREAT|O_RDWR);
         unlink("x");
         _exit(0);
       } else if(pid < 0){
@@ -196,7 +196,7 @@ go(int which_child)
       unlink("c");
       // should always succeed. check that there are free i-nodes,
       // file descriptors, blocks.
-      int fd1 = open("c", O_CREATE|O_RDWR);
+      int fd1 = open("c", O_CREAT|O_RDWR);
       if(fd1 < 0){
         printf("grind: create c failed\n");
         _exit(1);

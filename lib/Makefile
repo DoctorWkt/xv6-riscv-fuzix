@@ -5,7 +5,7 @@ all:
 	(cd ulib; make)
 	(cd libc; make install)
 	(cd stub; make install)
-	mv ulib/crt0.o .
+	mv stub/crt0.o .
 	$(AR) vr libulib.a ulib/*.o
 	$(RANLIB) libulib.a
 

@@ -10,6 +10,8 @@ UPROGS= seektest\
 	test022\
 	cptest\
 	crtrunc\
+	stdiotest\
+	prftest\
 
 all: $(UPROGS)
 

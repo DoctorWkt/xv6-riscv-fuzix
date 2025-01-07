@@ -5,7 +5,7 @@ OBJS = access.o chmod.o chown.o creat.o dup2.o exec.o fstat.o \
   getenv.o gethostname.o getpagesize.o getpgid.o \
   gettimeofday.o getuid.o misc.o mkfifo.o opendir.o rename.o rmdir.o \
   signal.o stat.o umask.o utime.o vfork.o waitpid.o brk.o cprintf.o \
-  locale.o usys.o
+  locale.o usys.o crt0.o
 
 all: $(OBJS)
 

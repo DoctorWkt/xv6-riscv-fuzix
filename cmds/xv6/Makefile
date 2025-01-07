@@ -1,5 +1,6 @@
 TOP_SRCDIR= ../..
 include $(TOP_SRCDIR)/Makefile.inc
+CRT0 = $(LIBDIR)/ulib/crt0.o
 
 UPROGS=\
 	cat\
