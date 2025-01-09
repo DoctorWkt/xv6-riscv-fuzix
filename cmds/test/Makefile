@@ -13,6 +13,7 @@ UPROGS= seektest\
 	stdiotest\
 	prftest\
 	perrtest\
+	brktest\
 
 all: $(UPROGS)
 

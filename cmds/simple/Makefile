@@ -3,7 +3,7 @@ include $(TOP_SRCDIR)/Makefile.inc
 CFLAGS += -Wno-error=char-subscripts
 
 UPROGS= banner basename cal cat cmp cp cut date dd dirname echo ed \
-  factor false fgrep grep head ls man mkdir more od printenv pwd rm rmdir \
+  factor false fgrep grep head less ls man mkdir more od printenv pwd rm rmdir \
   sed sleep sort sum sync tail tar tee touch tr true uniq uud uue vile wc \
   which xargs yes
 

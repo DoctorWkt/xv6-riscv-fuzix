@@ -268,6 +268,9 @@ growproc(int n)
       return -1;
     }
   } else if(n < 0){
+    // We cannot go below the initial size
+    if ((sz + n) < p->initsz)
+      return -1;
     sz = uvmdealloc(p->pagetable, sz, sz + n);
   }
   p->sz = sz;
