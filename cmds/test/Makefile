@@ -1,5 +1,6 @@
 TOP_SRCDIR= ../..
 include $(TOP_SRCDIR)/Makefile.inc
+CFLAGS += -Wno-infinite-recursion
 
 UPROGS= seektest\
 	tryexit\
@@ -14,6 +15,8 @@ UPROGS= seektest\
 	prftest\
 	perrtest\
 	brktest\
+	malltest\
+	recurtest\
 
 all: $(UPROGS)
 
