@@ -6,6 +6,9 @@
 
 #include <sys/ioctl.h>
 
+#define TIOCGETA        1               /* Arbitrary ioctl() numbers */
+#define TIOCSETA        2
+
 typedef uint16_t tcflag_t;
 typedef uint16_t speed_t;
 typedef uint8_t cc_t;

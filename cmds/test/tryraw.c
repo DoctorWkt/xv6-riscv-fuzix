@@ -11,7 +11,7 @@ int main()
 
   tcgetattr(0, &T);
   tcgetattr(0, &oldT);
-  cfmakeraw(&T);		// Turn off ICANON
+  T.c_lflag &= ~ICANON;		// Turn off canonical mode
   T.c_lflag |= ECHO;		// But leave ECHO on
   tcsetattr(0, TCSANOW, &T);
 

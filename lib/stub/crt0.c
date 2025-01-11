@@ -15,5 +15,5 @@ void start(int argc, char *argv[])
 {
   __stdio_init_vars();		// Initialise stdio
   int result= main(argc, argv);
-  _exit(result);
+  exit(result);
 }

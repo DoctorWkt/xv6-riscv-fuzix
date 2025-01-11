@@ -47,9 +47,9 @@ char *underline = "[4m";	// Underlining on
 
 // Set the terminal back to blocking and echo
 void reset_terminal() {
-  // int fd = open("/tty", O_RDONLY);
-  int fd = 0;
+  int fd = open("/console", O_RDONLY);
   tcsetattr(fd, TCSANOW, &orig_termios);
+  close(fd);
 }
 
 // Put the terminal into cbreak mode with no echo
@@ -58,8 +58,7 @@ void set_cbreak() {
 
   // Get the original terminal settings twice,
   // one for restoration later.
-  // int fd = open("/tty", O_RDONLY);
-  int fd = 0;
+  int fd = open("/console", O_RDONLY);
   tcgetattr(fd, &orig_termios);
   if (tcgetattr(fd, &t) == -1) { fprintf(stderr, "Cannot tcgetattr\n"); exit(1); }
 

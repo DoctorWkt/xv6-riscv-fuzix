@@ -223,8 +223,9 @@ uint64 consoleioctl(void)
       return(-1);
   } else {
     if (copyin(p->pagetable, (char *) &(cons.termios), 
-		ti, sizeof(struct termios))<0)
+		ti, sizeof(struct termios))<0) {
       return(-1);
+    }
   }
   return(0);
 }
