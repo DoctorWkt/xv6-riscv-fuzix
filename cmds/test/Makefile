@@ -18,6 +18,7 @@ UPROGS= seektest\
 	malltest\
 	recurtest\
 	nulltest\
+	rlinetest\
 
 all: $(UPROGS)
 
@@ -33,6 +34,11 @@ install: all
 
 %: %.o
 	$(LD) $(LDFLAGS) -T ../user.ld -o $@ $(CRT0) $< -L$(LIBDIR) -lc
+	$(OBJDUMP) -S $@ > $*.asm
+	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
+
+rlinetest: rlinetest.o
+	$(LD) $(LDFLAGS) -T ../user.ld -o $@ $(CRT0) $< -L$(LIBDIR) -lc -lreadline
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
