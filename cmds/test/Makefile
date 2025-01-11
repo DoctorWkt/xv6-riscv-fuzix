@@ -17,6 +17,7 @@ UPROGS= seektest\
 	brktest\
 	malltest\
 	recurtest\
+	nulltest\
 
 all: $(UPROGS)
 

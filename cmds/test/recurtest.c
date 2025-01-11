@@ -3,7 +3,7 @@
 // A test for infinite recursion
 
 void recurse(int x) {
-  printf("%d\n", x);
+  printf("%d at 0x%p\n", x, &x);
   recurse(x+1);
 }
 

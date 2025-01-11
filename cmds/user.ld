@@ -2,7 +2,7 @@ OUTPUT_ARCH( "riscv" )
 
 SECTIONS
 {
- . = 0x0;
+ . = 0x1000;		/* Make the first page invalid for NULL ptr derefs */
  
   .text : {
     *(.text .text.*)

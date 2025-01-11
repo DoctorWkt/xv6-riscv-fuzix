@@ -77,6 +77,9 @@ exec(char *path, char **argv)
   p = myproc();
   uint64 oldsz = p->sz;
 
+  // Mark page zero as invalid to catch NULL pointer dereferences
+  uvmclear(pagetable, 0);
+
   // Allocate some pages at the next page boundary.
   // Make the first inaccessible as a stack guard.
   // Use the rest as the user stack.
