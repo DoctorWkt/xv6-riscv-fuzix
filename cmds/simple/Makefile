@@ -4,7 +4,7 @@ CFLAGS += -Wno-infinite-recursion -Wno-char-subscripts
 
 UPROGS= banner basename cal cat cmp cp cut date dd dirname echo ed \
   factor false fgrep grep head less ls man mkdir more od printenv pwd rm rmdir \
-  sed sleep sort sum sync tail tar tee touch tr true uniq uud uue wc \
+  sh sed sleep sort sum sync tail tar tee touch tr true uniq uud uue wc \
   which xargs yes
 
 all: $(UPROGS)
@@ -21,6 +21,11 @@ install: all
 
 %: %.o
 	$(LD) $(LDFLAGS) -T ../user.ld -o $@ $(CRT0) $< -L$(LIBDIR) -lc
+	$(OBJDUMP) -S $@ > $*.asm
+	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
+
+sh: sh.o
+	$(LD) $(LDFLAGS) -T ../user.ld -o $@ $(CRT0) $< -L$(LIBDIR) -lc -lreadline
 	$(OBJDUMP) -S $@ > $*.asm
 	$(OBJDUMP) -t $@ | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $*.sym
 
