@@ -1,5 +1,6 @@
 CC = riscv64-linux-gnu-gcc
 AR = riscv64-linux-gnu-ar
+AS = riscv64-linux-gnu-as
 #CC_OPT = -march=rv32ima -mabi=ilp32 -static -static-libgcc -mstrict-align
 CC_OPT = -static -static-libgcc -mstrict-align
 CC_OPT += -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin
@@ -92,13 +93,16 @@ SRC_LM += sqrt.c tgamma.c
 SRC_LM += __expo2.c __double_bits.c __fpclassify.c __log1p.c
 SRC_LM += __sin.c __cos.c __tan.c __sindf.c __cosdf.c __tandf.c
 
+SRC_ASM= longjmp.s setjmp.s
+
 OBJ_C = $(SRC_C:.c=.o)
 OBJ_CURS = $(SRC_CURS:.c=.o)
 OBJ_CT = $(SRC_CT:.c=.o)
 OBJ_RL = $(SRC_RL:.c=.o)
 OBJ_LM = $(SRC_LM:.c=.o)
+OBJ_ASM = $(SRC_ASM:.s=.o)
 OBJ_HARD = $(SRC_HARD:.c=.o)
-OBJ_ALL = $(OBJ_C) $(OBJ_LM) $(OBJ_HARD) $(OBJ_RL)
+OBJ_ALL = $(OBJ_C) $(OBJ_LM) $(OBJ_HARD) $(OBJ_RL) $(OBJ_ASM)
 
 all: libc.a libcurses.a libreadline.a libtermcap.a libm.a
 

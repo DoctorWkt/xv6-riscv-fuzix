@@ -7,7 +7,7 @@
 
 int mkstemps(char *s, int slen)
 {
-  __ktime_t t;
+  time_t t;
   char *p = s + strlen(s) - slen - 6;
   uint16_t value;
   const char *n;
@@ -17,8 +17,8 @@ int mkstemps(char *s, int slen)
     goto bad;
   if (memcmp(p, "XXXXXX", 6))
     goto bad;
-  _time(&t, 0);
-  value = (getuid() << 8) + getpid() + (uint16_t)t.low;
+  t= time(0);
+  value = (uint16_t)t;
   do {
     value += 7919;	/* Any old prime ought to do */
     n = _itoa(value);
