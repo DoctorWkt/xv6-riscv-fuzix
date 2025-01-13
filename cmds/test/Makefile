@@ -19,6 +19,7 @@ UPROGS= seektest\
 	recurtest\
 	nulltest\
 	rlinetest\
+	jmptest\
 
 all: $(UPROGS)
 
