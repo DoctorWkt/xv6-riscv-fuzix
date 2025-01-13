@@ -53,14 +53,15 @@ void reset_terminal() {
 }
 
 // Put the terminal into cbreak mode with no echo
-void set_cbreak() {
+void set_cbreak(int fd) {
   struct termios t;
 
   // Get the original terminal settings twice,
   // one for restoration later.
-  int fd = open("/console", O_RDONLY);
   tcgetattr(fd, &orig_termios);
-  if (tcgetattr(fd, &t) == -1) { fprintf(stderr, "Cannot tcgetattr\n"); exit(1); }
+  if (tcgetattr(fd, &t) == -1) {
+    fprintf(stderr, "Cannot tcgetattr\n"); exit(1);
+  }
 
   t.c_lflag &= ~(ICANON | ECHO);
   t.c_lflag |= ISIG;
@@ -68,11 +69,12 @@ void set_cbreak() {
   t.c_cc[VMIN] = 1;		// Character-at-a-time input
   t.c_cc[VTIME] = 0;		// with blocking
 
-  if (tcsetattr(fd, TCSAFLUSH, &t) == -1) { fprintf(stderr, "Cannot tcsetattr\n"); exit(1); }
+  if (tcsetattr(fd, TCSAFLUSH, &t) == -1) {
+    fprintf(stderr, "Cannot tcsetattr\n"); exit(1);
+  }
 
   // Ensure we reset the terminal when we exit
   atexit(reset_terminal);
-  close(fd);
 }
 
 // Build the list of line numbers and their offsets
@@ -271,13 +273,26 @@ int main(int argc, char *argv[]) {
   struct lineposn *this;
   int looping = 1;
   int ch;
+  int ttyfd=0;
 
   // Check the arguments
   if (argc > 2) { fprintf(stderr, "Usage: less [filename]\n"); exit(1); }
 
-  // Build the doubly-linked list of lines and their offsets
-  if (argc == 1) build_line_list(NULL);
-  else build_line_list(argv[1]);
+  // Build the doubly-linked list of lines and their offsets.
+  if (argc == 1) {
+    build_line_list(NULL);
+    // Get a fd for the console
+    ttyfd= open("/console", O_RDONLY);
+    if (ttyfd == -1) {
+      fprintf(stderr, "Unable to open /console\n"); exit(1);
+    }
+  } else {
+    build_line_list(argv[1]);
+    // Reopen up the file
+    if ((fp = fopen(argv[1], "r")) == NULL) {
+      fprintf(stderr, "Unable to open %s\n", argv[1]); exit(1);
+    }
+  }
 
 #if 0
   // Debug
@@ -287,15 +302,10 @@ int main(int argc, char *argv[]) {
     printf("ptr %x line %ld offset %ld\n", this, this->linenum, this->offset);
 #endif
 
-  // Reopen up the file
-  if (argc == 2)
-    if ((fp = fopen(argv[1], "r")) == NULL) {
-      fprintf(stderr, "Unable to open %s\n", argv[1]); exit(1);
-    }
 
   // Put the terminal into cbreak mode
   // and start at line 1
-  set_cbreak();
+  set_cbreak(ttyfd);
   this = linehead;
 
   // Get a command and deal with it
