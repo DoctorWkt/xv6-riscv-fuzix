@@ -16,12 +16,13 @@ main(void)
 {
   int pid, wpid;
 
-  if(open("console", O_RDWR) < 0){
-    mknod("console", CONSOLE, 0);
-    open("console", O_RDWR);
-  }
-  dup(0);  // stdout
-  dup(0);  // stderr
+  // Make and populate a /dev
+  mkdir("/dev");
+  mknod("/dev/tty", CONSOLE, 0);
+
+  open("/dev/tty", O_RDWR);	// stdin:  fd 0
+  dup(0);			// stdout: fd 1
+  dup(0);			// stderr: fd 2
 
   for(;;){
     printf("init: starting sh\n");

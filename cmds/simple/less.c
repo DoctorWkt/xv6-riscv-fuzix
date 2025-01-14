@@ -47,7 +47,7 @@ char *underline = "[4m";	// Underlining on
 
 // Set the terminal back to blocking and echo
 void reset_terminal() {
-  int fd = open("/console", O_RDONLY);
+  int fd = open("/dev/tty", O_RDONLY);
   tcsetattr(fd, TCSANOW, &orig_termios);
   close(fd);
 }
@@ -282,9 +282,9 @@ int main(int argc, char *argv[]) {
   if (argc == 1) {
     build_line_list(NULL);
     // Get a fd for the console
-    ttyfd= open("/console", O_RDONLY);
+    ttyfd= open("/dev/tty", O_RDONLY);
     if (ttyfd == -1) {
-      fprintf(stderr, "Unable to open /console\n"); exit(1);
+      fprintf(stderr, "Unable to open /dev/tty\n"); exit(1);
     }
   } else {
     build_line_list(argv[1]);
