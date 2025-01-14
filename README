@@ -2,8 +2,24 @@ xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
 Version 6 (v6).  xv6 loosely follows the structure and style of v6,
 but is implemented for a modern RISC-V multiprocessor using ANSI C.
 
-This is a fork of the xv6-riscv repository.
-I will add a libc and userland from FUZIX.
+This is a fork of the xv6-riscv repository. I have added a libc and
+userland from FUZIX. The code in these areas comes from xv6:
+
+ - cmds/xv6
+ - include/xv6
+ - lib/ulib
+ - kernel
+ - mkfs
+
+The code in these areas comes from FUZIX:
+
+ - cmds/simple
+ - include
+ - lib/libc
+
+See the LICENSE.* files for their respective copyrights. Anything else
+should have its own licensing permissions identified, otherwise you can
+assume it is the xv6 license.
 
 ACKNOWLEDGMENTS
 
