@@ -1,0 +1,38 @@
+Here is a (likely incomplete) list of changes I've made to the original
+xv6-riscv repository:
+
+## Kernel
+
+I've added several more system calls: `time()`, `lseek()`, `ioctl()`.
+The kernel now returns `errno` values as well as the usual system call
+results. I fixed an `sbrk()` bug. I added ECHO and ICANON flags to the
+console. I added more stack pages to each process space as well as an
+invalid page to catch NULL pointer dereferences.
+
+## Libraries
+
+I've moved the xv6 libraries into `lib/ulib/`, and I've imported
+the FUZIX libraries into `lib/libc`. I've had to make some adjustments
+to some of the FUZIX functions to match a) the 32-bit RISC-V environment
+and b) the xv6 kernel.
+
+There are also several functions in the `lib/stub` directory which
+either provide dummy actions, e.g. `access()`, or help interface the
+FUZIX libraries with the xv6 kernel, e.g. `fstat().
+
+## Userland
+
+`cmds/xv6/` now contain the original xv6 programs. `cmds/simple/` hold
+commands from FUZIX which fit into one file each. The other directories
+in `cmd/` are for programs which have multiple source files.
+
+## Organisation
+
+I've restructured the organisation of the source code into more
+directories, and created Makefiles so that the code in each
+sub-directory can be built, installed and cleaned.
+
+## Tools
+
+`mkfs` now builds a filesystem image based on the contents of
+a directory. The `fs/` directory is used as the source directory.
