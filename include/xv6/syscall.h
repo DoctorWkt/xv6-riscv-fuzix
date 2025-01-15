@@ -23,3 +23,4 @@
 #define SYS_time   22
 #define SYS_lseek  23
 #define SYS_ioctl  24
+#define SYS_fchdir 25

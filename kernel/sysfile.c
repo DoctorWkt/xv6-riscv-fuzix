@@ -450,6 +450,24 @@ sys_mknod(void)
 }
 
 uint64
+ichdir(struct inode *ip)
+{
+  struct proc *p = myproc();
+  ilock(ip);
+  if(ip->type != T_DIR){
+    iunlockput(ip);
+    end_op();
+    p-> errno = ENOTDIR;
+    return -1;
+  }
+  iunlock(ip);
+  iput(p->cwd);
+  end_op();
+  p->cwd = ip;
+  return 0;
+}
+
+uint64
 sys_chdir(void)
 {
   char path[MAXPATH];
@@ -474,6 +492,19 @@ sys_chdir(void)
   end_op();
   p->cwd = ip;
   return 0;
+}
+
+uint64
+sys_fchdir(void)
+{
+  struct file *f;
+  struct proc *p = myproc();
+
+  if(argfd(0, 0, &f) < 0) {
+    p->errno= EBADF;
+    return -1;
+  }
+  return(ichdir(f->ip));
 }
 
 uint64

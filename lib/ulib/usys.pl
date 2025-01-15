@@ -47,3 +47,4 @@ entry("uptime");
 entry("time");
 entry("lseek");
 entry("ioctl");
+entry("fchdir");
