@@ -91,7 +91,7 @@ filestat(struct file *f, uint64 addr)
   struct proc *p = myproc();
   struct stat st;
   
-  if(f->type == FD_INODE || f->type == FD_DEVICE){
+  if(f->type == FD_INODE || f->type == FD_DEVICE) {
     ilock(f->ip);
     stati(f->ip, &st);
     iunlock(f->ip);
@@ -99,6 +99,13 @@ filestat(struct file *f, uint64 addr)
       p->errno= EFAULT;
       return -1;
     }
+    return 0;
+  }
+
+  if(f->type == FD_PIPE) {
+    memset(&st, 0, sizeof(st));
+    st.type= T_PIPE;
+    st.size= PIPESIZE;
     return 0;
   }
   p->errno= EACCES;

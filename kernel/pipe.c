@@ -9,8 +9,6 @@
 #include <xv6/file.h>
 #include <xv6/errno.h>
 
-#define PIPESIZE 512
-
 struct pipe {
   struct spinlock lock;
   char data[PIPESIZE];

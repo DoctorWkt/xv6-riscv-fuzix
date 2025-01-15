@@ -16,4 +16,4 @@ install: wish
 	cp wish $(TOP_SRCDIR)/fs/bin
 
 clean:
-	rm -f *.[do] s *.asm
+	rm -f *.[do] s *.asm wish

@@ -36,6 +36,7 @@ int fstat(int fildes, struct stat *buf)
     case T_DIR:      buf->st_mode |= S_IFDIR; break;
     case T_FILE:     buf->st_mode |= S_IFREG; break;
     case T_DEVICE:   buf->st_mode |= S_IFBLK; break;
+    case T_PIPE:     buf->st_mode |= S_IFIFO; break;
   }
   return(0);
 }
