@@ -466,6 +466,8 @@ stati(struct inode *ip, struct stat *st)
   st->nlink = ip->nlink;
   st->mtime = ip->mtime;
   st->size = ip->size;
+  st->major = ip->major;
+  st->minor = ip->minor;
 }
 
 // Read data from inode.

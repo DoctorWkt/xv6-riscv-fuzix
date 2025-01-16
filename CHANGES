@@ -20,7 +20,7 @@ and b) the xv6 kernel.
 
 There are also several functions in the `lib/stub` directory which
 either provide dummy actions, e.g. `access()`, or help interface the
-FUZIX libraries with the xv6 kernel, e.g. `fstat().
+FUZIX libraries with the xv6 kernel, e.g. `fstat()`.
 
 ## Userland
 

@@ -25,7 +25,7 @@ int fstat(int fildes, struct stat *buf)
   buf->st_nlink= s.nlink;
   buf->st_uid=   0;
   buf->st_gid=   0;
-  buf->st_rdev=  0;
+  buf->st_rdev=  s.major;
   buf->st_size=  s.size;
   buf->st_atime= 0;
   buf->st_mtime= s.mtime;

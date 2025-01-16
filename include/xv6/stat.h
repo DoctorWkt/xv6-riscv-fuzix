@@ -8,6 +8,8 @@ struct stat {
   uint ino;    // Inode number
   short type;  // Type of file
   short nlink; // Number of links to file
+  short major; // Device's major and minor numbers
+  short minor;
   int mtime;   // Last modification time
   uint64 size; // Size of file in bytes
 };
