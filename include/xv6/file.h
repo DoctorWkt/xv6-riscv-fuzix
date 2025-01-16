@@ -38,7 +38,9 @@ struct devsw {
 
 extern struct devsw devsw[];
 
+// List of devices
 #define CONSOLE 1
+#define DEVNULL 2	// /dev/null and /dev/zero
 
 // lseek defines
 #define SEEK_SET  0

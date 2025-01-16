@@ -10,7 +10,6 @@
 //
 
 #include <stdarg.h>
-
 #include <xv6/types.h>
 #include <xv6/param.h>
 #include <xv6/spinlock.h>
@@ -230,6 +229,30 @@ uint64 consoleioctl(void)
   return(0);
 }
 
+// This should go in another file
+
+// Read from /dev/zero
+int
+zeroread(int user_dst, uint64 dst, int n)
+{
+  int i;
+  char ch= 0;
+  for (i=0; i<n; i++, dst++) {
+    // copy the input byte to the user-space buffer.
+    printf("Copying byte %d out of %d\n", i, n);
+    if (either_copyout(user_dst, dst, &ch, 1) == -1)
+      break;
+  }
+  return(i);
+}
+
+// Write to /dev/null
+static int
+nullwrite(int user_src, uint64 src, int n)
+{
+  return(n);
+}
+
 void
 consoleinit(void)
 {
@@ -239,7 +262,9 @@ consoleinit(void)
 
   // connect read and write system calls
   // to consoleread and consolewrite.
-  devsw[CONSOLE].read = consoleread;
+  devsw[CONSOLE].read  = consoleread;
   devsw[CONSOLE].write = consolewrite;
+  devsw[DEVNULL].read  = zeroread;
+  devsw[DEVNULL].write = nullwrite;
   cons.termios.c_lflag = ECHO | ICANON;
 }

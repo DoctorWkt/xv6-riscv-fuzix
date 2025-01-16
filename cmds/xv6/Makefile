@@ -10,7 +10,7 @@ UPROGS=\
 	init\
 	kill\
 	oldln\
-	ls\
+	oldls\
 	oldmkdir\
 	oldrm\
 	oldsh\

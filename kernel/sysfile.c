@@ -438,6 +438,7 @@ sys_mknod(void)
   begin_op();
   argint(1, &major);
   argint(2, &minor);
+printf("Making device %d %d\n", major, minor);
   if((argstr(0, path, MAXPATH)) < 0 ||
      (ip = create(path, T_DEVICE, major, minor)) == 0){
     end_op();

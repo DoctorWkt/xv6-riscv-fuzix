@@ -19,6 +19,8 @@ main(void)
   // Make and populate a /dev
   mkdir("/dev");
   mknod("/dev/tty", CONSOLE, 0);
+  mknod("/dev/null", DEVNULL, 0);
+  mknod("/dev/zero", DEVNULL, 0);
 
   open("/dev/tty", O_RDWR);	// stdin:  fd 0
   dup(0);			// stdout: fd 1
