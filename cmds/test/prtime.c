@@ -1,13 +1,17 @@
 // Print the time in seconds
 
-#include <xv6/types.h>
-#include <xv6/stat.h>
-#include <xv6/fcntl.h>
-#include <xv6/user.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <time.h>
 
 void cprintf(char *, ...);
 
 int main(int argc, char *argv[]) {
-  cprintf("Current time in seconds: %ld\n", time());
+  time_t tim;
+  cprintf("Current time in seconds: %ld\n", time(NULL));
+  time(&tim);
+  cprintf("Current time using pointer: %ld\n", tim);
   return(0);
 }
