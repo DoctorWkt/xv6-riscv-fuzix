@@ -239,7 +239,6 @@ zeroread(int user_dst, uint64 dst, int n)
   char ch= 0;
   for (i=0; i<n; i++, dst++) {
     // copy the input byte to the user-space buffer.
-    printf("Copying byte %d out of %d\n", i, n);
     if (either_copyout(user_dst, dst, &ch, 1) == -1)
       break;
   }
