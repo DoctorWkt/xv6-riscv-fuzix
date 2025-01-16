@@ -217,9 +217,11 @@ static void lsfile(char *name, struct stat *statbuf, int flags)
 		sprintf(cp, "%-8s ", groupname);
 		cp += strlen(cp);
 #endif
+		// Doesn't work as xv6 doesn't store the major/minor
+		// numbers in i-nodes
 		if (S_ISDEV(statbuf->st_mode))
 			sprintf(cp, "%3d,%-3d  ",
-				statbuf->st_rdev >> 8, statbuf->st_rdev & 0xFF);
+				statbuf->st_rdev, 0);
 		else
 			sprintf(cp, "%8ld ", (long) statbuf->st_size);
 		cp += strlen(cp);

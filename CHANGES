@@ -3,11 +3,13 @@ xv6-riscv repository:
 
 ## Kernel
 
-I've added several more system calls: `time()`, `lseek()`, `ioctl()`.
-The kernel now returns `errno` values as well as the usual system call
-results. I fixed an `sbrk()` bug. I added ECHO and ICANON flags to the
-console. I added more stack pages to each process space as well as an
-invalid page to catch NULL pointer dereferences.
+I've added several more system calls: `time()`, `lseek()`, `ioctl()` and
+`fchdir()`. The kernel now returns `errno` values as well as the usual
+system call results. I fixed an `sbrk()` bug. I added ECHO and ICANON
+flags to the console. I added more stack pages to each process space as
+well as an invalid page to catch NULL pointer dereferences.
+
+There is a `/dev/null` and a `/dev/zero`.
 
 ## Libraries
 
