@@ -66,7 +66,7 @@ tests: mkfiles sh
 	@rm -f Z_[a-q]*
 
 clean:
-	rm -rf *.o *.a sh v7sh
+	rm -rf *.[do] *.a sh v7sh
 
 MYARCH:=$(shell uname -m | sed -e 's/i[4-9]86/i386/' -e 's/armv[3-6]t\?e\?[lb]/arm/')
 dietlibc/bin-$(MYARCH)/diet:
