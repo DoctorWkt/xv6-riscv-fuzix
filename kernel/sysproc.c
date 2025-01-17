@@ -62,6 +62,10 @@ sys_sleep(void)
   argint(0, &n);
   if(n < 0)
     n = 0;
+
+  // Ticks are about 10Hz, so we multiply n by 10
+  n= n * 10;
+
   acquire(&tickslock);
   ticks0 = ticks;
   while(ticks - ticks0 < n){
