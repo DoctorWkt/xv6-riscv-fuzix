@@ -144,7 +144,7 @@ execs(STRING ap, STRING t[])
 	trim(p = stakbot);
 
 	sigchk();
-	execve(p, &t[0], xecenv);
+	execvpe(p, &t[0], xecenv);
 
 	/* exec failed.  figure out why */
 	switch (errno) {

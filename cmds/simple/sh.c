@@ -61,7 +61,6 @@ void runcmd(struct cmd*) __attribute__((noreturn));
 void
 runcmd(struct cmd *cmd)
 {
-  char binbuf[100];
   int p[2];
   struct backcmd *bcmd;
   struct execcmd *ecmd;
@@ -80,12 +79,7 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       exit(1);
-    execv(ecmd->argv[0], ecmd->argv);
-
-    // The basic exec failed. Try exec'ing /bin/argv[0]
-    strcpy(binbuf, "/bin/");
-    strcpy(&binbuf[5], ecmd->argv[0]);
-    execv(binbuf, ecmd->argv);
+    execvp(ecmd->argv[0], ecmd->argv);
 
     fprintf(stderr, "exec %s failed\n", ecmd->argv[0]);
     break;
