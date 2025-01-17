@@ -34,7 +34,7 @@ v7sh: main.o $(OBJS) sbrkalloc.o
 
 install: v7sh
 	$(STRIP) v7sh
-	cp v7sh ../../fs/bin
+	cp v7sh ../../fs/bin/sh
 
 db_%.h:
 	@ln -s Memory/$@ $@

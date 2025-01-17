@@ -62,7 +62,7 @@ MSG	devnull		 = "/dev/null";
 MSG	execpmsg	 = "+ ";
 MSG	readmsg		 = "> ";
 MSG	stdprompt	 = "$ ";
-MSG	supprompt	 = "# ";
+MSG	supprompt	 = "$ ";	// Changed for xv6: wkt
 MSG	profile		 = ".profile";
 
 

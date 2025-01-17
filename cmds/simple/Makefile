@@ -4,7 +4,7 @@ CFLAGS += -Wno-infinite-recursion -Wno-char-subscripts
 
 UPROGS= banner basename cal cat cmp cp cut date dd dirname echo ed \
   factor false fgrep grep head less ls man mkdir more od printenv pwd rm rmdir \
-  sh sed sleep sort sum sync tail tar tee touch tr true uniq uud uue wc \
+  oldsh sed sleep sort sum sync tail tar tee touch tr true uniq uud uue wc \
   which xargs yes roff
 
 all: $(UPROGS)

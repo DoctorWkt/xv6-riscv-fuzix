@@ -13,7 +13,6 @@ UPROGS=\
 	oldls\
 	oldmkdir\
 	oldrm\
-	oldsh\
 	stressfs\
 	usertests\
 	grind\
