@@ -1,10 +1,12 @@
 xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
-Version 6 (v6).  xv6 loosely follows the structure and style of v6,
-but is implemented for a modern RISC-V multiprocessor using ANSI C.
+Version 6 (v6) kernel. xv6 loosely follows the structure and style of
+v6, but is implemented for a modern RISC-V multiprocessor using ANSI C.
 
 This is a fork of the xv6-riscv repository. I have added a libc and
-userland from FUZIX. The code in these areas comes from xv6:
+userland from FUZIX to make the system feel like a real old-school
+Unix system.
 
+The code in these areas comes from xv6:
  - cmds/xv6
  - include/xv6
  - lib/ulib
@@ -12,7 +14,6 @@ userland from FUZIX. The code in these areas comes from xv6:
  - mkfs
 
 The code in these areas comes from FUZIX:
-
  - cmds/simple
  - include
  - lib/libc
@@ -63,3 +64,7 @@ You will need a RISC-V "newlib" tool chain from
 https://github.com/riscv/riscv-gnu-toolchain, and qemu compiled for
 riscv64-softmmu.  Once they are installed, and in your shell
 search path, you can run "make qemu".
+
+For Debian (and Ubuntu?) systems, you can install the
+'linux-libc-dev-riscv64-cross' and 'qemu-system-misc' to get the
+toolchain and qemu.
